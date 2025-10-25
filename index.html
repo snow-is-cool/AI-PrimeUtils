@@ -39,9 +39,54 @@
             flex-direction: column;
             justify-content: center;
         }
+        
+        /* Custom style for the Home Button - NOW POSITIONED TOP LEFT */
+        .home-button {
+            position: absolute;
+            top: 1.5rem; 
+            left: 1.5rem; /* --- CHANGED FROM RIGHT: 1.5rem --- */
+            z-index: 50; 
+            padding: 0.75rem;
+            border-radius: 9999px; /* Full circle */
+            background-color: #ffffff;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            color: #6366f1; /* Tailwind indigo-500 */
+            transition: all 0.2s;
+            border: 1px solid #e5e7eb; /* gray-200 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .home-button:hover {
+            background-color: #eef2ff; /* Tailwind indigo-50 */
+            color: #4f46e5; /* Tailwind indigo-600 */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        }
+        .home-button img {
+             width: 24px; /* w-6 */
+             height: 24px; /* h-6 */
+             /* Fallback style if image doesn't load */
+             background-color: #d1d5db; /* gray-300 */
+             border-radius: 50%;
+        }
+
+        /* Ensure the body acts as a flex container for centering */
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding-top: 5rem; /* Add padding to account for the absolute position of the home button */
+            position: relative;
+        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-4">
+<body class="min-h-screen">
+
+<a href="[https://snow-is-cool.github.io/home](https://snow-is-cool.github.io/home)" id="homeButton" class="home-button">
+    <img src="tohome.png" alt="Home">
+</a>
+
 
     <!-- Title Box -->
     <div class="w-full max-w-lg mb-6 text-center bg-white shadow-md rounded-xl p-4 border border-gray-100">
@@ -472,7 +517,7 @@
             // Check against a reasonable safety limit before calling Miller-Rabin
             if (p > MAX_SAFE_EXPONENT) {
                 // Return value only, cannot guarantee primality check
-                return { Mp, Ep: 0n, isPrime: false, error: `The Mersenne number M(${p}) = 2${toSuperscript(p)} - 1 is too large to test for primality in this environment.` };
+                return { Mp: Mp.toLocaleString(), Ep: 0n, isPrime: false, error: `The Mersenne number M(${p}) = 2${toSuperscript(p)} - 1 is too large to test for primality in this environment.` };
             }
 
             const isMersennePrime = miller_rabin_is_prime(Number(Mp));
@@ -485,7 +530,7 @@
                 Ep = twoToPMinusOne * Mp;
             }
 
-            return { Mp, Ep, isPrime: isMersennePrime, error: error };
+            return { Mp: Mp.toLocaleString(), Ep: Ep.toLocaleString(), isPrime: isMersennePrime, error: error };
         }
 
 
@@ -909,19 +954,19 @@
                 
                 if (error) {
                     // Uses Unicode superscript pSuperscript
-                    mersenneResultDisplay_card1.textContent = `Mersenne Number M(${p}) = ${formulaText} is too large to test.`;
+                    mersenneResultDisplay_card1.textContent = `Mersenne Number M(${p}) = ${Mp} is too large to test.`;
                     perfectNumDisplay_card1.innerHTML = `<span class="text-red-600 font-semibold">${error}</span>`;
                 } else if (isPrime) {
-                    mersenneResultDisplay_card1.innerHTML = `Success! M(${p}) = ${Mp.toLocaleString()} is a <strong class="text-blue-700">Mersenne Prime</strong>.`;
+                    mersenneResultDisplay_card1.innerHTML = `Success! M(${p}) = ${Mp} is a <strong class="text-blue-700">Mersenne Prime</strong>.`;
                     perfectNumDisplay_card1.innerHTML = `
                         <div class="mt-2 text-sm text-gray-700">
                             The corresponding Perfect Number is: 
-                            <span class="font-bold text-gray-800">${Ep.toLocaleString()}</span>
+                            <span class="font-bold text-gray-800">${Ep}</span>
                         </div>
                     `;
                 } else {
                     mersenneResultDisplay_card1.innerHTML = `
-                        M(${p}) = ${Mp.toLocaleString()} is <strong class="text-red-700">NOT a Mersenne Prime</strong>.
+                        M(${p}) = ${Mp} is <strong class="text-red-700">NOT a Mersenne Prime</strong>.
                     `;
                     perfectNumDisplay_card1.textContent = "No corresponding Perfect Number found.";
                 }

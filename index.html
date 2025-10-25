@@ -40,34 +40,26 @@
             justify-content: center;
         }
         
-        /* Custom style for the Home Button - NOW POSITIONED TOP LEFT */
-        .home-button {
+       .home-button {
             position: absolute;
-            top: 1.5rem; 
-            left: 1.5rem; /* --- CHANGED FROM RIGHT: 1.5rem --- */
-            z-index: 50; 
-            padding: 0.75rem;
-            border-radius: 0.5rem; /* Full circle */
-            background-color: #ffffff;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-            color: #6366f1; /* Tailwind indigo-500 */
-            transition: all 0.2s;
-            border: 1px solid #e5e7eb; /* gray-200 */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .home-button:hover {
-            background-color: #eef2ff; /* Tailwind indigo-50 */
-            color: #4f46e5; /* Tailwind indigo-600 */
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            top: 0.5rem; /* Position relative to .main-content-wrapper's padding */
+            left: 0.5rem; /* Position relative to .main-content-wrapper's padding */
+            z-index: 20; /* Ensure it's on top */
+            border-radius: 0.5rem; /* Rounded square */
+            overflow: hidden; /* Ensures image respects border-radius */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
         .home-button img {
-             width: 24px; /* w-6 */
-             height: 24px; /* h-6 */
-             /* Fallback style if image doesn't load */
-             background-color: #d1d5db; /* gray-300 */
-             border-radius: 50%;
+            display: block;
+            width: 32px; /* Small size for the icon */
+            height: 32px;
+            background-color: rgba(255, 255, 255, 0.1); /* Slight background for visibility */
+            padding: 4px;
+            border-radius: 0.5rem; /* Rounded square */
+            transition: background-color 0.2s ease;
+        }
+        .home-button:hover img {
+            background-color: rgba(255, 255, 255, 0.2);
         }
 
         /* Ensure the body acts as a flex container for centering */

@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prime Number Utility</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom font import */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fb;
+        }
+        /* Style for the flashcard content to prevent layout shifts */
+        .card-page {
+            width: 100%;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .hidden {
+            display: none;
+        }
+        /* Pulse animation for loading text */
+        @keyframes pulse-once {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+        .pulse-once {
+            animation: pulse-once 1s infinite;
+        }
+        .result-box {
+            background-color: #eef2ff;
+            border-left: 4px solid #6366f1;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            min-height: 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
+
+    <!-- Title Box -->
+    <div class="w-full max-w-lg mb-6 text-center bg-white shadow-md rounded-xl p-4 border border-gray-100">
+        <h1 class="text-3xl font-bold text-gray-800">Prime Number Utility Tool</h1>
+    </div>
+
+    <!-- Main Card Container -->
+    <div class="w-full max-w-lg bg-white shadow-2xl rounded-xl p-8 border border-gray-100 flex flex-col items-center relative">
+        
+        <!-- Previous Button (Left Arrow Bubble) -->
+        <button 
+            id="prevBtn" 
+            class="absolute left-[-4rem] top-1/2 transform -translate-y-1/2 p-4 text-2xl text-gray-700 bg-white shadow-lg rounded-full hover:text-indigo-600 disabled:opacity-30 transition duration-150 border border-gray-200 focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-opacity-50 z-10"
+            aria-label="Previous Card"
+            disabled
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+            </svg>
+        </button>
+
+        <!-- Next Button (Right Arrow Bubble) -->
+        <button 
+            id="nextBtn" 
+            class="absolute right-[-4rem] top-1/2 transform -translate-y-1/2 p-4 text-2xl text-gray-700 bg-white shadow-lg rounded-full hover:text-indigo-600 disabled:opacity-30 transition duration-150 border border-gray-200 focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-opacity-50 z-10"
+            aria-label="Next Card"
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+            </svg>
+        </button>
+
+        <!-- Card Content Area -->
+        <div id="cardContent" class="w-full mt-4 overflow-hidden">
+            
+            <!-- 1. FIND N-th PRIME SECTION (Card 0) -->
+            <div id="card-0" class="card-page space-y-4">
+                <h2 class="text-xl font-semibold text-indigo-700">1. Find the n-th Prime</h2>
+                <p class="text-sm text-gray-500">
+                    Enter the position (n) you want to find.
+                </p>
+
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <input 
+                        type="number" 
+                        id="nInput_card0" 
+                        placeholder="Enter n (e.g., 1000)"
+                        class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 shadow-sm text-gray-700"
+                        value="1000"
+                        min="1"
+                    >
+                    <button 
+                        id="calculateBtn_card0"
+                        class="bg-indigo-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-indigo-700 transition duration-200 focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-opacity-50 active:scale-[0.98] disabled:bg-indigo-400"
+                    >
+                        Calculate nth Prime
+                    </button>
+                </div>
+                
+                <!-- Limit Warning -->
+                <p id="nLimitWarning_card0" class="text-xs text-red-500 hidden">
+                    Warning: Values of n > 10,000 will be very slow using this method.
+                </p>
+
+                <!-- Result Area for N-th Prime -->
+                <div id="resultContainer_card0" class="bg-indigo-50 p-4 rounded-lg border-l-4 border-indigo-500 min-h-[50px] flex flex-col justify-center">
+                    <p id="resultDisplay_card0" class="text-lg font-bold text-gray-800">
+                        Awaiting calculation...
+                    </p>
+                    <p id="timeDisplay_card0" class="text-xs text-gray-500 mt-1"></p>
+                </div>
+            </div>
+            
+            <!-- 1b. MERSENNE PRIMES SECTION (Card 1) -->
+            <div id="card-1" class="card-page space-y-4 hidden">
+                <h2 class="text-xl font-semibold text-blue-700">2. Mersenne Primes & Perfect Numbers</h2>
+                <p class="text-sm text-gray-500">
+                    Enter an exponent p. We check if M(p) = 2ᵖ - 1 is prime and calculate the corresponding Perfect Number.
+                </p>
+
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <input 
+                        type="number" 
+                        id="exponentInput_card1" 
+                        placeholder="Enter exponent p (e.g., 5)"
+                        class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 shadow-sm text-gray-700"
+                        value="5"
+                        min="2"
+                    >
+                    <button 
+                        id="mersenneBtn_card1"
+                        class="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition duration-200 focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 active:scale-[0.98] disabled:bg-blue-400"
+                    >
+                        Check M(p)
+                    </button>
+                </div>
+
+                <!-- Limit Warning -->
+                <p id="mersenneLimitWarning_card1" class="text-xs text-red-500 hidden">
+                    Warning: Exponents p greater than 53 will exceed safe JavaScript integer limits for the primality test.
+                </p>
+
+                <!-- Result Area for Mersenne -->
+                <div id="mersenneResultContainer_card1" class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500 min-h-[50px] flex flex-col justify-center">
+                    <p id="mersenneResultDisplay_card1" class="text-lg font-bold text-gray-800">
+                        Awaiting calculation...
+                    </p>
+                    <p id="perfectNumDisplay_card1" class="text-md text-gray-700 mt-2"></p>
+                    <p id="mersenneTimeDisplay_card1" class="text-xs text-gray-500 mt-1"></p>
+                </div>
+            </div>
+
+            <!-- 2. CHECK PRIME POSITION SECTION (Card 2) -->
+            <div id="card-2" class="card-page space-y-4 hidden">
+                <h2 class="text-xl font-semibold text-green-700">3. Check Prime Position (Rank)</h2>
+                <p class="text-sm text-gray-500">
+                    Enter a number to see if it's prime, its position, and nearby prime pairs.
+                </p>
+
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <input 
+                        type="number" 
+                        id="checkInput_card2" 
+                        placeholder="Enter a number (e.g., 13 or 100)"
+                        class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 transition duration-150 shadow-sm text-gray-700"
+                        value="13"
+                        min="1"
+                    >
+                    <button 
+                        id="checkBtn_card2"
+                        class="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-green-700 transition duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 active:scale-[0.98] disabled:bg-green-400"
+                    >
+                        Check Number
+                    </button>
+                </div>
+
+                <!-- Result Area for Prime Check -->
+                <div id="checkResultContainer_card2" class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500 min-h-[50px] flex flex-col justify-center">
+                    <p id="checkResultDisplay_card2" class="text-lg font-bold text-gray-800">
+                        Click 'Check Number' to begin.
+                    </p>
+                    <p id="checkTimeDisplay_card2" class="text-xs text-gray-500 mt-1"></p>
+                </div>
+                
+                <!-- Prime Pair Section (New Feature) -->
+                <div id="primePairSection_card2" class="bg-gray-100 p-4 rounded-lg text-sm hidden border border-gray-200 space-y-2">
+                    <h4 class="font-semibold text-gray-700">Prime Pair Status:</h4>
+                    <p id="twinPrimeStatus_card2" class="text-gray-600"></p>
+                    <p id="cousinPrimeStatus_card2" class="text-gray-600"></p>
+                </div>
+
+                <!-- Factorization Section -->
+                <div id="factorizationSection_card2" class="hidden pt-2 border-t border-green-200">
+                    <button id="toggleFactorizationBtn_card2" class="text-sm text-green-700 hover:underline font-medium focus:outline-none">
+                        Show Factorization
+                    </button>
+                    <!-- Factorization content display area -->
+                    <div id="factorizationDisplay_card2" class="bg-gray-100 p-3 mt-2 rounded-lg text-sm font-mono whitespace-nowrap overflow-x-auto hidden">
+                        <!-- Factors will be inserted here -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 3. PRIME COUNTING SECTION (Card 3) -->
+            <div id="card-3" class="card-page space-y-4 hidden">
+                <h2 class="text-xl font-semibold text-yellow-700">4. Prime Counter (π(x))</h2>
+                <p class="text-sm text-gray-500">
+                    Enter a number (x) to count how many prime numbers are less than or equal to x. 
+                </p>
+
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <input 
+                        type="number" 
+                        id="xInput_card3" 
+                        placeholder="Enter x (e.g., 100)"
+                        class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-yellow-500 focus:border-yellow-500 transition duration-150 shadow-sm text-gray-700"
+                        value="100"
+                        min="1"
+                        max="10000"
+                    >
+                    <button 
+                        id="countBtn_card3"
+                        class="bg-yellow-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-yellow-700 transition duration-200 focus:outline-none focus:ring-4 focus:ring-yellow-500 focus:ring-opacity-50 active:scale-[0.98] disabled:bg-yellow-400"
+                    >
+                        Count Primes (π(x))
+                    </button>
+                </div>
+
+                <!-- Limit Warning -->
+                <p id="xLimitWarning_card3" class="text-xs text-red-500">
+                    Maximum reliable limit is 10,000 using this calculation method.
+                </p>
+
+                <!-- Result Area for Prime Counter -->
+                <div id="countResultContainer_card3" class="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-500 min-h-[50px] flex flex-col justify-center">
+                    <p id="countResultDisplay_card3" class="text-lg font-bold text-gray-800">
+                        Click 'Count Primes' to begin.
+                    </p>
+                    <p id="countTimeDisplay_card3" class="text-xs text-gray-500 mt-1"></p>
+                </div>
+            </div>
+
+            <!-- 4. PRIME GAPS AND RECORDS SECTION (Card 4) -->
+            <div id="card-4" class="card-page space-y-4 hidden">
+                <h2 class="text-xl font-semibold text-red-700">5. Prime Gaps and Records</h2>
+                <p class="text-sm text-gray-500">
+                    Find the largest gap between two consecutive primes up to a limit.
+                </p>
+
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <input 
+                        type="number" 
+                        id="gapLimitInput_card4" 
+                        placeholder="Enter limit X (e.g., 10000)"
+                        class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 transition duration-150 shadow-sm text-gray-700"
+                        value="10000"
+                        min="1"
+                        max="1000000"
+                    >
+                    <button 
+                        id="findGapBtn_card4"
+                        class="bg-red-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-red-700 transition duration-200 focus:outline-none focus:ring-4 focus:ring-red-500 focus:ring-opacity-50 active:scale-[0.98] disabled:bg-red-400"
+                    >
+                        Find Largest Gap
+                    </button>
+                </div>
+
+                <!-- Limit Warning -->
+                <p id="gapLimitWarning_card4" class="text-xs text-gray-500">
+                    Max reliable limit is 1,000,000. Higher values will be very slow.
+                </p>
+
+                <!-- Result Area for Prime Gaps -->
+                <div id="gapResultContainer_card4" class="bg-red-50 p-4 rounded-lg border-l-4 border-red-500 min-h-[50px] flex flex-col justify-center">
+                    <p id="gapResultDisplay_card4" class="text-lg font-bold text-gray-800">
+                        Click 'Find Largest Gap' to begin.
+                    </p>
+                    <p id="gapTimeDisplay_card4" class="text-xs text-gray-500 mt-1"></p>
+                </div>
+            </div>
+
+            <!-- 5. GOLDBACH'S CONJECTURE SECTION (Card 5) -->
+            <div id="card-5" class="card-page space-y-4 hidden">
+                <h2 class="text-xl font-semibold text-purple-700">6. Goldbach's Conjecture</h2>
+                <p class="text-sm text-gray-500">
+                    Find a pair of primes that add up to the even number you enter.
+                </p>
+
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <input 
+                        type="number" 
+                        id="goldbachInput_card5" 
+                        placeholder="Enter an even number (e.g., 100)"
+                        class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 transition duration-150 shadow-sm text-gray-700"
+                        value="100"
+                        min="4"
+                    >
+                    <button 
+                        id="findPairBtn_card5"
+                        class="bg-purple-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-purple-700 transition duration-200 focus:outline-none focus:ring-4 focus:ring-purple-500 focus:ring-opacity-50 active:scale-[0.98] disabled:bg-purple-400"
+                    >
+                        Find Prime Pair
+                    </button>
+                </div>
+
+                <!-- Result Area for Goldbach -->
+                <div id="goldbachResultContainer_card5" class="bg-purple-50 p-4 rounded-lg border-l-4 border-purple-500 min-h-[50px] flex flex-col justify-center">
+                    <p id="goldbachResultDisplay_card5" class="text-lg font-bold text-gray-800">
+                        Click 'Find Prime Pair' to begin.
+                    </p>
+                    <p id="goldbachTimeDisplay_card5" class="text-xs text-gray-500 mt-1"></p>
+                </div>
+
+                <!-- Pairs List -->
+                <div id="goldbachPairsSection_card5" class="hidden bg-gray-100 p-3 rounded-lg border border-gray-200">
+                    <h4 class="font-semibold text-gray-700 mb-1">All Pairs Found:</h4>
+                    <ul id="goldbachPairsList_card5" class="text-sm text-gray-600 grid grid-cols-2 sm:grid-cols-3 gap-1">
+                        <!-- Pairs will be inserted here -->
+                    </ul>
+                </div>
+            </div>
+
+
+        </div>
+        
+        <!-- Page Indicator -->
+        <div id="pageIndicator" class="text-center text-sm text-gray-500 pt-4 mt-4 w-full border-t border-gray-200">
+            Viewing: <span class="font-semibold text-gray-700">N-th Prime Finder</span> (1 of 6)
+        </div>
+
+    </div>
+
+    <script>
+        // Key for localStorage persistence
+        const STORAGE_KEY = 'primeUtilityState';
+        const MAX_SAFE_EXPONENT = 53; // Maximum p for 2^p - 1 before exceeding 2^53
+
+        // --- Core Math Logic ---
+        
+        /**
+         * Converts a number to its ordinal string representation (e.g., 1 -> 1st, 3 -> 3rd).
+         */
+        function to_ordinal(n) {
+            if (typeof n !== 'number' || !Number.isInteger(n) || n < 1) {
+                return String(n);
+            }
+            const s = n.toLocaleString();
+            const lastTwo = n % 100;
+            if (lastTwo >= 11 && lastTwo <= 13) {
+                return s + 'th';
+            }
+            const lastDigit = n % 10;
+            switch (lastDigit) {
+                case 1:
+                    return s + 'st';
+                case 2:
+                    return s + 'nd';
+                case 3:
+                    return s + 'rd';
+                default:
+                    return s + 'th';
+            }
+        }
+        
+        /**
+         * Converts a number to its Unicode superscript equivalent for exponents.
+         */
+        function toSuperscript(n) {
+            const map = { '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
+            return n.toString().split('').map(digit => map[digit] || digit).join('');
+        }
+
+        /**
+         * Implements the Miller-Rabin primality test for large numbers (using BigInt).
+         * Reliable up to numbers around 3.3e18.
+         */
+        function miller_rabin_is_prime(n) {
+            if (n <= 1) return false;
+            if (n <= 3) return true;
+            if (n % 2 === 0) return false;
+
+            // Bases for strong pseudoprimality test (safe up to 3.3e18)
+            const bases = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37];
+
+            let d = n - 1;
+            let s = 0;
+            while (d % 2 === 0) {
+                d /= 2;
+                s++;
+            }
+
+            // Modular exponentiation (b^e mod m) using BigInt
+            const power = (b, exp, mod) => {
+                let res = 1n;
+                b = b % mod;
+                while (exp > 0n) {
+                    if (exp % 2n === 1n) res = (res * b) % mod;
+                    exp = exp >> 1n;
+                    b = (b * b) % mod;
+                }
+                return res;
+            };
+
+            const N = BigInt(n);
+            const D = BigInt(d);
+            const S = BigInt(s);
+
+            for (const a_val of bases) {
+                if (N === BigInt(a_val)) return true;
+                if (a_val >= n) continue; // Skip bases larger than n
+                
+                let a = BigInt(a_val);
+                let x = power(a, D, N);
+
+                if (x === 1n || x === N - 1n) continue;
+
+                let composite = true;
+                for (let r = 0n; r < S - 1n; r++) {
+                    x = (x * x) % N;
+                    if (x === N - 1n) {
+                        composite = false;
+                        break;
+                    }
+                }
+                if (composite) return false;
+            }
+            return true;
+        }
+
+        /**
+         * Checks if a number is prime. Uses standard trial division for small numbers
+         * and the faster Miller-Rabin test for numbers >= 100,000.
+         */
+        function is_prime(num) {
+            if (num <= 1) return false;
+            if (num < 100000) {
+                // Trial division for smaller numbers (faster for these)
+                const limit = Math.floor(Math.sqrt(num));
+                for (let i = 2; i <= limit; i++) {
+                    if (num % i === 0) {
+                        return false;
+                    }
+                }
+                return true;
+            } else {
+                // Miller-Rabin for large numbers
+                if (typeof BigInt !== 'undefined' && num < Number.MAX_SAFE_INTEGER) {
+                    return miller_rabin_is_prime(num);
+                } else {
+                    // Fallback for extremely large/unsupported numbers
+                    return false; 
+                }
+            }
+        }
+
+        /**
+         * Calculates M_p = 2^p - 1 and E_p = 2^(p-1) * M_p, checking for primality.
+         */
+        function find_mersenne_prime_and_perfect_number(p) {
+            if (p < 2) return { Mp: 0n, Ep: 0n, isPrime: false };
+
+            const P = BigInt(p);
+            // Calculate Mp = 2^P - 1
+            const twoToP = 2n ** P;
+            const Mp = twoToP - 1n;
+
+            // Check against a reasonable safety limit before calling Miller-Rabin
+            if (p > MAX_SAFE_EXPONENT) {
+                // Return value only, cannot guarantee primality check
+                return { Mp, Ep: 0n, isPrime: false, error: `The Mersenne number M(${p}) = 2${toSuperscript(p)} - 1 is too large to test for primality in this environment.` };
+            }
+
+            const isMersennePrime = miller_rabin_is_prime(Number(Mp));
+            let Ep = 0n;
+            let error = null;
+
+            if (isMersennePrime) {
+                // Calculate Perfect Number Ep = 2^(p-1) * Mp
+                const twoToPMinusOne = 2n ** (P - 1n);
+                Ep = twoToPMinusOne * Mp;
+            }
+
+            return { Mp, Ep, isPrime: isMersennePrime, error: error };
+        }
+
+
+        /**
+         * Calculates the prime factorization of a number, returning an array of factors.
+         */
+        function get_prime_factorization(num) {
+            let factors = [];
+            let d = 2;
+            let tempNum = num;
+
+            while (d * d <= tempNum) {
+                while (tempNum % d === 0) {
+                    factors.push(d);
+                    tempNum /= d;
+                }
+                d++;
+            }
+            if (tempNum > 1) {
+                factors.push(tempNum);
+            }
+            return factors; 
+        }
+
+        /**
+         * Converts an array of factors into an exponential format string (e.g., "2² × 3 × 5").
+         */
+        function format_exponential_factorization(factors) {
+            if (factors.length === 0) return "";
+            const counts = {};
+            factors.forEach(f => { counts[f] = (counts[f] || 0) + 1; });
+            let parts = [];
+            const bases = Object.keys(counts).map(Number).sort((a, b) => a - b);
+
+            for (const base of bases) {
+                const count = counts[base];
+                parts.push(count === 1 ? base : base + toSuperscript(count));
+            }
+            return parts.join(' × ');
+        }
+
+        /**
+         * Calculates the n-th prime number iteratively. (Used by Section 1)
+         */
+        function find_nth_prime(n) {
+            if (n < 1) {
+                return "Input must be a positive integer (n ≥ 1).";
+            }
+            if (n === 1) {
+                return 2;
+            }
+
+            let count = 1; 
+            let candidate = 3; 
+
+            // Using the combined is_prime() now
+            while (count < n) {
+                if (is_prime(candidate)) {
+                    count++;
+                    if (count === n) {
+                        return candidate;
+                    }
+                }
+                candidate += 2; 
+            }
+            return "Calculation error."; 
+        }
+
+        /**
+         * Calculates the position (rank) of a given number, provided it is prime. (Used by Section 2)
+         */
+        function find_prime_position(num) {
+            // We already check for primality in the main handler, so we assume it's prime here.
+            let count = 0;
+            let current = 2;
+
+            while (current <= num) {
+                // Using the combined is_prime() now
+                if (is_prime(current)) {
+                    count++;
+                }
+                if (current === num) {
+                    return count;
+                }
+
+                if (current === 2) {
+                    current = 3;
+                } else {
+                    current += 2;
+                }
+            }
+            return -1; // Should not be reached if called after is_prime check
+        }
+        
+        /**
+         * Calculates the estimate from the Prime Number Theorem: x / ln(x).
+         */
+        function calculate_pnt_estimate(x) {
+            if (x <= 1) return 0;
+            return x / Math.log(x);
+        }
+
+        /**
+         * Calculates the number of primes less than or equal to a given number X (The Pi function, π(x)).
+         */
+        function count_primes_up_to(x) {
+            if (x < 2) return 0;
+            
+            // Use Sieve for efficiency on Card 3, which has a small limit (10k)
+            return sieve_of_eratosthenes(x).length;
+        }
+
+        /**
+         * Generates all primes up to a limit (inclusive) using the Sieve of Eratosthenes.
+         * Used by Cards 3, 4, and 5.
+         */
+        function sieve_of_eratosthenes(limit) {
+            if (limit <= 1) return [];
+            const isPrime = new Array(limit + 1).fill(true);
+            isPrime[0] = isPrime[1] = false;
+            for (let p = 2; p * p <= limit; p++) {
+                if (isPrime[p]) {
+                    for (let i = p * p; i <= limit; i += p)
+                        isPrime[i] = false;
+                }
+            }
+            const primes = [];
+            for (let p = 2; p <= limit; p++) {
+                if (isPrime[p]) {
+                    primes.push(p);
+                }
+            }
+            return primes;
+        }
+        
+        /**
+         * Finds the largest gap between consecutive primes up to a given limit. (Used by Section 4)
+         */
+        function findLargestPrimeGap(limit) {
+            const primes = sieve_of_eratosthenes(limit);
+            if (primes.length < 2) {
+                return { gap: 0, p1: 0, p2: 0 };
+            }
+
+            let maxGap = 0;
+            let maxP1 = 0;
+            let maxP2 = 0;
+
+            for (let i = 0; i < primes.length - 1; i++) {
+                const p1 = primes[i];
+                const p2 = primes[i + 1];
+                const currentGap = p2 - p1;
+
+                if (currentGap >= maxGap) { // Use >= to capture the latest instance if ties occur
+                    maxGap = currentGap;
+                    maxP1 = p1;
+                    maxP2 = p2;
+                }
+            }
+
+            return { gap: maxGap, p1: maxP1, p2: maxP2 };
+        }
+        
+        /**
+         * Finds a pair of primes (p1, p2) such that p1 + p2 = n (for even n). (Used by Section 5)
+         * Returns an array of {p1, p2} objects.
+         */
+        function findGoldbachPair(n) {
+            if (n <= 2 || n % 2 !== 0) {
+                return []; 
+            }
+
+            const primes = sieve_of_eratosthenes(n);
+            const primeSet = new Set(primes);
+            const pairs = [];
+
+            // Only need to check up to n/2 to avoid duplicates (e.g., 3+97 and 97+3)
+            for (const p1 of primes) {
+                if (p1 > n / 2) break; 
+
+                const p2 = n - p1;
+
+                // Check if p2 is prime and p2 is greater than or equal to p1 (handled by the break)
+                if (primeSet.has(p2)) {
+                    pairs.push({ p1: p1, p2: p2 });
+                }
+            }
+
+            return pairs; 
+        }
+
+        
+        // --- State Management ---
+        
+        // Default initial state
+        const defaultState = {
+            'card-0': { n: 1000, resultText: 'Awaiting calculation...', timeText: '' },
+            'card-1': { // NEW Mersenne Card
+                p: 5, 
+                resultText: 'Awaiting calculation...', 
+                timeText: '', 
+                MpText: 'Awaiting calculation...',
+                EpText: ''
+            },
+            'card-2': { // Shifted from card-1
+                num: 13, 
+                resultText: 'Click \'Check Number\' to begin.', 
+                timeText: '', 
+                isPrime: true, 
+                factorization: '',
+                twinStatus: '',
+                cousinStatus: ''
+            },
+            'card-3': { // Shifted from card-2
+                x: 100, 
+                resultText: 'Click \'Count Primes\' to begin.', 
+                timeText: '' 
+            },
+            'card-4': { // Shifted from card-3
+                limit: 10000, 
+                resultText: 'Click \'Find Largest Gap\' to begin.', 
+                timeText: '' 
+            },
+            'card-5': { // Shifted from card-4
+                n: 100, 
+                resultText: 'Click \'Find Prime Pair\' to begin.', 
+                timeText: '', 
+                pairs: [] 
+            }
+        };
+
+        let calculationState;
+
+        /**
+         * Loads state from localStorage or uses the default state.
+         */
+        function loadState() {
+            try {
+                const storedState = localStorage.getItem(STORAGE_KEY);
+                if (storedState) {
+                    calculationState = JSON.parse(storedState);
+                    return;
+                }
+            } catch (e) {
+                console.warn("Could not load state from local storage:", e);
+            }
+            calculationState = defaultState;
+        }
+        
+        /**
+         * Saves the current application state to localStorage.
+         */
+        function saveApplicationState() {
+             try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(calculationState));
+            } catch (e) {
+                console.error("Could not save state to local storage:", e);
+            }
+        }
+
+
+        // --- UI Element References ---
+
+        // Card 0 (N-th Prime)
+        const nInput_card0 = document.getElementById('nInput_card0');
+        const calculateBtn_card0 = document.getElementById('calculateBtn_card0');
+        const resultDisplay_card0 = document.getElementById('resultDisplay_card0');
+        const timeDisplay_card0 = document.getElementById('timeDisplay_card0');
+        const nLimitWarning_card0 = document.getElementById('nLimitWarning_card0');
+        
+        // Card 1 (Mersenne)
+        const exponentInput_card1 = document.getElementById('exponentInput_card1');
+        const mersenneBtn_card1 = document.getElementById('mersenneBtn_card1');
+        const mersenneResultDisplay_card1 = document.getElementById('mersenneResultDisplay_card1');
+        const perfectNumDisplay_card1 = document.getElementById('perfectNumDisplay_card1');
+        const mersenneTimeDisplay_card1 = document.getElementById('mersenneTimeDisplay_card1');
+        const mersenneLimitWarning_card1 = document.getElementById('mersenneLimitWarning_card1');
+
+        // Card 2 (Prime Rank) - Was card-1
+        const checkInput_card2 = document.getElementById('checkInput_card2');
+        const checkBtn_card2 = document.getElementById('checkBtn_card2');
+        const checkResultDisplay_card2 = document.getElementById('checkResultDisplay_card2');
+        const checkTimeDisplay_card2 = document.getElementById('checkTimeDisplay_card2');
+        const factorizationSection_card2 = document.getElementById('factorizationSection_card2');
+        const factorizationDisplay_card2 = document.getElementById('factorizationDisplay_card2');
+        const toggleFactorizationBtn_card2 = document.getElementById('toggleFactorizationBtn_card2');
+        const primePairSection_card2 = document.getElementById('primePairSection_card2');
+        const twinPrimeStatus_card2 = document.getElementById('twinPrimeStatus_card2');
+        const cousinPrimeStatus_card2 = document.getElementById('cousinPrimeStatus_card2');
+        
+        // Card 3 (Prime Counter) - Was card-2
+        const xInput_card3 = document.getElementById('xInput_card3');
+        const countBtn_card3 = document.getElementById('countBtn_card3');
+        const countResultDisplay_card3 = document.getElementById('countResultDisplay_card3');
+        const countTimeDisplay_card3 = document.getElementById('countTimeDisplay_card3');
+        const xLimitWarning_card3 = document.getElementById('xLimitWarning_card3');
+
+        // Card 4 (Prime Gaps) - Was card-3
+        const gapLimitInput_card4 = document.getElementById('gapLimitInput_card4');
+        const findGapBtn_card4 = document.getElementById('findGapBtn_card4');
+        const gapResultDisplay_card4 = document.getElementById('gapResultDisplay_card4');
+        const gapTimeDisplay_card4 = document.getElementById('gapTimeDisplay_card4');
+        const gapLimitWarning_card4 = document.getElementById('gapLimitWarning_card4');
+
+        // Card 5 (Goldbach's Conjecture) - Was card-4
+        const goldbachInput_card5 = document.getElementById('goldbachInput_card5');
+        const findPairBtn_card5 = document.getElementById('findPairBtn_card5');
+        const goldbachResultDisplay_card5 = document.getElementById('goldbachResultDisplay_card5');
+        const goldbachTimeDisplay_card5 = document.getElementById('goldbachTimeDisplay_card5');
+        const goldbachPairsSection_card5 = document.getElementById('goldbachPairsSection_card5');
+        const goldbachPairsList_card5 = document.getElementById('goldbachPairsList_card5');
+
+
+        // --- Core Application Logic ---
+        
+        /**
+         * Checks the adjacent numbers for prime pairs (Twin, Cousin).
+         */
+        function checkPrimePairs(num) {
+            let twinText = `<span class="font-medium text-red-600">No</span>`;
+            let cousinText = `<span class="font-medium text-red-600">No</span>`;
+
+            // Twin Primes: n +/- 2
+            const p_minus_2 = num - 2;
+            const p_plus_2 = num + 2;
+
+            if (p_minus_2 > 1 && is_prime(p_minus_2)) {
+                twinText = `<span class="font-medium text-green-600">Yes</span> (Paired with ${p_minus_2.toLocaleString()})`;
+            } else if (is_prime(p_plus_2)) {
+                twinText = `<span class="font-medium text-green-600">Yes</span> (Paired with ${p_plus_2.toLocaleString()})`;
+            }
+            
+            // Cousin Primes: n +/- 4
+            const p_minus_4 = num - 4;
+            const p_plus_4 = num + 4;
+            
+            if (p_minus_4 > 1 && is_prime(p_minus_4)) {
+                cousinText = `<span class="font-medium text-green-600">Yes</span> (Paired with ${p_minus_4.toLocaleString()})`;
+            } else if (is_prime(p_plus_4)) {
+                cousinText = `<span class="font-medium text-green-600">Yes</span> (Paired with ${p_plus_4.toLocaleString()})`;
+            }
+            
+            // Bolding the descriptive label, not the result itself
+            twinPrimeStatus_card2.innerHTML = `<strong>Twin Prime Pair (Difference of 2):</strong> ${twinText}`;
+            cousinPrimeStatus_card2.innerHTML = `<strong>Cousin Prime Pair (Difference of 4):</strong> ${cousinText}`;
+
+            return { twinStatus: twinPrimeStatus_card2.innerHTML, cousinStatus: cousinPrimeStatus_card2.innerHTML };
+        }
+
+
+        /**
+         * Calculates the N-th prime and updates the UI (DOES NOT save to global state).
+         */
+        function calculatePrime() {
+            const n = parseInt(nInput_card0.value);
+
+            if (isNaN(n) || n < 1 || nInput_card0.value.trim() === '') {
+                resultDisplay_card0.textContent = "Error: Please enter a valid positive integer for n.";
+                timeDisplay_card0.textContent = "";
+                return;
+            }
+
+            calculateBtn_card0.disabled = true;
+            calculateBtn_card0.innerHTML = '<span class="pulse-once">Searching...</span>';
+            resultDisplay_card0.innerHTML = `<span class="text-gray-500">Searching for the ${to_ordinal(n)} prime...</span>`;
+            timeDisplay_card0.textContent = "";
+            nInput_card0.disabled = true;
+
+            setTimeout(() => {
+                const startTime = performance.now();
+                const result = find_nth_prime(n);
+                const endTime = performance.now();
+                const elapsedTime = (endTime - startTime) / 1000;
+
+                if (typeof result === 'number') {
+                    // No need for innerHTML bolding here, the result is the main focus
+                    resultDisplay_card0.textContent = `The ${to_ordinal(n)} prime is: ${result.toLocaleString()}`;
+                    timeDisplay_card0.textContent = `Calculation took: ${elapsedTime.toFixed(4)} seconds.`;
+                } else {
+                    resultDisplay_card0.textContent = result;
+                    timeDisplay_card0.textContent = "";
+                }
+
+                calculateBtn_card0.disabled = false;
+                calculateBtn_card0.textContent = 'Calculate nth Prime';
+                nInput_card0.disabled = false;
+            }, 50);
+        }
+
+        /**
+         * Calculates Mersenne and Perfect numbers and updates the UI. (Card 1)
+         */
+        function runMersenneFinder() {
+            const p = parseInt(exponentInput_card1.value);
+
+            if (isNaN(p) || p < 2 || exponentInput_card1.value.trim() === '') {
+                mersenneResultDisplay_card1.textContent = "Error: Please enter a valid integer exponent (p ≥ 2).";
+                perfectNumDisplay_card1.textContent = "";
+                mersenneTimeDisplay_card1.textContent = "";
+                return;
+            }
+            
+            const pSuperscript = toSuperscript(p);
+            const formulaText = `2${pSuperscript} - 1`;
+
+            mersenneBtn_card1.disabled = true;
+            mersenneBtn_card1.innerHTML = '<span class="pulse-once">Calculating...</span>';
+            mersenneResultDisplay_card1.innerHTML = `<span class="text-gray-500">Calculating M(${p})...</span>`;
+            perfectNumDisplay_card1.textContent = "";
+            mersenneTimeDisplay_card1.textContent = "";
+            exponentInput_card1.disabled = true;
+
+            setTimeout(() => {
+                const startTime = performance.now();
+                const result = find_mersenne_prime_and_perfect_number(p);
+                const { Mp, Ep, isPrime, error } = result;
+                const endTime = performance.now();
+                const elapsedTime = (endTime - startTime) / 1000;
+
+                mersenneTimeDisplay_card1.textContent = `Calculation took: ${elapsedTime.toFixed(4)} seconds.`;
+                
+                if (error) {
+                    // Uses Unicode superscript pSuperscript
+                    mersenneResultDisplay_card1.textContent = `Mersenne Number M(${p}) = ${formulaText} is too large to test.`;
+                    perfectNumDisplay_card1.innerHTML = `<span class="text-red-600 font-semibold">${error}</span>`;
+                } else if (isPrime) {
+                    mersenneResultDisplay_card1.innerHTML = `Success! M(${p}) = ${Mp.toLocaleString()} is a <strong class="text-blue-700">Mersenne Prime</strong>.`;
+                    perfectNumDisplay_card1.innerHTML = `
+                        <div class="mt-2 text-sm text-gray-700">
+                            The corresponding Perfect Number is: 
+                            <span class="font-bold text-gray-800">${Ep.toLocaleString()}</span>
+                        </div>
+                    `;
+                } else {
+                    mersenneResultDisplay_card1.innerHTML = `
+                        M(${p}) = ${Mp.toLocaleString()} is <strong class="text-red-700">NOT a Mersenne Prime</strong>.
+                    `;
+                    perfectNumDisplay_card1.textContent = "No corresponding Perfect Number found.";
+                }
+
+
+                mersenneBtn_card1.disabled = false;
+                mersenneBtn_card1.textContent = 'Check M(p)';
+                exponentInput_card1.disabled = false;
+            }, 50);
+        }
+
+
+        /**
+         * Checks the rank of a number and updates the UI (DOES NOT save to global state).
+         */
+        function checkPrimePosition() {
+            const num = parseInt(checkInput_card2.value);
+            const maxDisplayLength = 20;
+
+            if (isNaN(num) || num < 1 || checkInput_card2.value.trim() === '') {
+                checkResultDisplay_card2.textContent = "Error: Please enter a valid positive integer to check.";
+                checkTimeDisplay_card2.textContent = "";
+                factorizationSection_card2.classList.add('hidden');
+                primePairSection_card2.classList.add('hidden');
+                return;
+            }
+
+            checkBtn_card2.disabled = true;
+            checkBtn_card2.innerHTML = '<span class="pulse-once">Analyzing...</span>';
+            checkResultDisplay_card2.innerHTML = `<span class="text-gray-500">Analyzing ${num.toLocaleString()} (using Miller-Rabin for large numbers)...</span>`;
+            checkTimeDisplay_card2.textContent = "";
+            checkInput_card2.disabled = true;
+            factorizationSection_card2.classList.add('hidden');
+            primePairSection_card2.classList.add('hidden');
+
+            setTimeout(() => {
+                const startTime = performance.now();
+                const isNPrime = is_prime(num);
+                let position = -1;
+                let pairStatus = {};
+
+                if (isNPrime) {
+                    // Only find position for primes (slow for large numbers)
+                    position = find_prime_position(num);
+                    pairStatus = checkPrimePairs(num); // Check pairs
+                }
+
+                const endTime = performance.now();
+                const elapsedTime = (endTime - startTime) / 1000;
+                const timeText = `Check took: ${elapsedTime.toFixed(4)} seconds.`;
+                
+                let factorizationString = '';
+
+                if (isNPrime) {
+                    // Result: Is Prime. Use .textContent to bold the ordinal (not possible with strong tag)
+                    checkResultDisplay_card2.textContent = `${num.toLocaleString()} is the ${to_ordinal(position)} prime number!`;
+                    primePairSection_card2.classList.remove('hidden');
+                    factorizationSection_card2.classList.add('hidden');
+                } else {
+                    // Result: Is Not Prime (must show factorization)
+                    checkResultDisplay_card2.textContent = `${num.toLocaleString()} is NOT a prime number.`;
+
+                    const factors = get_prime_factorization(num);
+                    factorizationString = format_exponential_factorization(factors); 
+
+                    const isLongFactorization = factorizationString.length > maxDisplayLength;
+                    const displayString = isLongFactorization
+                        ? factorizationString.substring(0, maxDisplayLength) + '...'
+                        : factorizationString;
+
+                    factorizationDisplay_card2.dataset.fullFactorization = factorizationString;
+                    factorizationDisplay_card2.textContent = displayString;
+                    
+                    factorizationDisplay_card2.classList.add('hidden');
+                    factorizationSection_card2.classList.remove('hidden'); 
+                    primePairSection_card2.classList.add('hidden');
+                    toggleFactorizationBtn_card2.textContent = isLongFactorization ? 'Show Full Factorization' : 'Show Factorization';
+                }
+                
+                checkTimeDisplay_card2.textContent = timeText;
+
+                // Reset UI State
+                checkBtn_card2.disabled = false;
+                checkBtn_card2.textContent = 'Check Number';
+                checkInput_card2.disabled = false;
+            }, 50);
+        }
+        
+        /**
+         * Counts primes up to X and updates the UI (DOES NOT save to global state).
+         */
+        function runPrimeCounter() {
+            const x = parseInt(xInput_card3.value);
+
+            if (isNaN(x) || x < 1 || xInput_card3.value.trim() === '') {
+                countResultDisplay_card3.textContent = "Error: Please enter a valid positive integer for x.";
+                countTimeDisplay_card3.textContent = "";
+                return;
+            }
+
+            if (x > 10000) {
+                 countResultDisplay_card3.textContent = "Error: Input exceeds the safe limit of 10,000 for this calculation method. Please enter a lower number.";
+                 countTimeDisplay_card3.textContent = "";
+                 return;
+            }
+
+
+            countBtn_card3.disabled = true;
+            countBtn_card3.innerHTML = '<span class="pulse-once">Counting...</span>';
+            countResultDisplay_card3.innerHTML = `<span class="text-gray-500">Running Sieve...</span>`;
+            countTimeDisplay_card3.textContent = "";
+            xInput_card3.disabled = true;
+
+            setTimeout(() => {
+                const startTime = performance.now();
+                const actualCount = count_primes_up_to(x);
+                const pntEstimate = calculate_pnt_estimate(x);
+                const endTime = performance.now();
+                const elapsedTime = (endTime - startTime) / 1000;
+                
+                // PNT Comparison
+                let pntComparison = '';
+                if (pntEstimate > 0) {
+                    const diff = pntEstimate - actualCount;
+                    const percentError = Math.abs(diff / actualCount) * 100;
+                    
+                    // PNT estimate is not bolded, keeping only the actual count bolded.
+                    pntComparison = `<div class="mt-2 text-sm text-gray-600">
+                        <span class="font-semibold">PNT Estimate (x/ln(x)):</span> ${pntEstimate.toFixed(0).toLocaleString()}
+                        <span class="text-xs ml-2">(${percentError.toFixed(2)}% difference)</span>
+                    </div>`;
+                }
+
+                // Only BOLD the actual count (the main result)
+                countResultDisplay_card3.innerHTML = `There are <strong>${actualCount.toLocaleString()}</strong> primes less than or equal to ${x.toLocaleString()}. ${pntComparison}`;
+                countTimeDisplay_card3.textContent = `Calculation took: ${elapsedTime.toFixed(4)} seconds.`;
+
+                countBtn_card3.disabled = false;
+                countBtn_card3.textContent = 'Count Primes (π(x))';
+                xInput_card3.disabled = false;
+            }, 50);
+        }
+
+        /**
+         * Finds the largest prime gap and updates the UI. (Card 4)
+         */
+        function runPrimeGapFinder() {
+            const limit = parseInt(gapLimitInput_card4.value);
+
+            if (isNaN(limit) || limit < 3 || gapLimitInput_card4.value.trim() === '') {
+                gapResultDisplay_card4.textContent = "Error: Please enter a valid integer greater than 2.";
+                gapTimeDisplay_card4.textContent = "";
+                return;
+            }
+            if (limit > 1000000) {
+                gapResultDisplay_card4.textContent = "Error: Limit is too high. Please enter a value under 1,000,000.";
+                gapTimeDisplay_card4.textContent = "";
+                return;
+            }
+
+            findGapBtn_card4.disabled = true;
+            findGapBtn_card4.innerHTML = '<span class="pulse-once">Searching Gaps...</span>';
+            gapResultDisplay_card4.innerHTML = `<span class="text-gray-500">Running Sieve up to ${limit.toLocaleString()}...</span>`;
+            gapTimeDisplay_card4.textContent = "";
+            gapLimitInput_card4.disabled = true;
+
+            setTimeout(() => {
+                const startTime = performance.now();
+                const result = findLargestPrimeGap(limit);
+                const endTime = performance.now();
+                const elapsedTime = (endTime - startTime) / 1000;
+
+                if (result.gap === 0) {
+                    gapResultDisplay_card4.textContent = `No prime gap found (must have at least two primes).`;
+                } else {
+                    gapResultDisplay_card4.innerHTML = `The Largest Gap up to ${limit.toLocaleString()} is <strong>${result.gap.toLocaleString()}</strong>.
+                        <div class="text-sm mt-1 text-gray-600">
+                            This gap occurs between P1 = ${result.p1.toLocaleString()} and P2 = ${result.p2.toLocaleString()}.
+                        </div>`;
+                }
+
+                gapTimeDisplay_card4.textContent = `Calculation took: ${elapsedTime.toFixed(4)} seconds.`;
+                findGapBtn_card4.disabled = false;
+                findGapBtn_card4.textContent = 'Find Largest Gap';
+                gapLimitInput_card4.disabled = false;
+            }, 50);
+        }
+
+        /**
+         * Finds Goldbach pairs and updates the UI. (Card 5)
+         */
+        function runGoldbachFinder() {
+            const n = parseInt(goldbachInput_card5.value);
+
+            goldbachPairsSection_card5.classList.add('hidden');
+
+            if (isNaN(n) || n < 4 || n % 2 !== 0 || goldbachInput_card5.value.trim() === '') {
+                goldbachResultDisplay_card5.textContent = "Error: Please enter a valid even integer greater than 2.";
+                goldbachTimeDisplay_card5.textContent = "";
+                return;
+            }
+
+            findPairBtn_card5.disabled = true;
+            findPairBtn_card5.innerHTML = '<span class="pulse-once">Finding Pairs...</span>';
+            goldbachResultDisplay_card5.innerHTML = `<span class="text-gray-500">Checking Goldbach's Conjecture for ${n.toLocaleString()}...</span>`;
+            goldbachTimeDisplay_card5.textContent = "";
+            goldbachInput_card5.disabled = true;
+
+            setTimeout(() => {
+                const startTime = performance.now();
+                const pairs = findGoldbachPair(n);
+                const endTime = performance.now();
+                const elapsedTime = (endTime - startTime) / 1000;
+                
+                let listHTML = '';
+
+                if (pairs.length > 0) {
+                    // Only BOLD the resulting prime pair
+                    goldbachResultDisplay_card5.innerHTML = `Success! The number ${n.toLocaleString()} is the sum of two primes.
+                        <div class="text-sm mt-1 text-gray-600">
+                            First pair found: <strong>${pairs[0].p1.toLocaleString()} + ${pairs[0].p2.toLocaleString()}</strong>
+                        </div>`;
+                    
+                    pairs.forEach(pair => {
+                        listHTML += `<li>${pair.p1.toLocaleString()} + ${pair.p2.toLocaleString()}</li>`;
+                    });
+
+                    goldbachPairsList_card5.innerHTML = listHTML;
+                    goldbachPairsSection_card5.classList.remove('hidden');
+                } else {
+                    goldbachResultDisplay_card5.textContent = `Error: Could not find prime pairs for ${n.toLocaleString()}. (Should not happen per conjecture)`;
+                    goldbachPairsSection_card5.classList.add('hidden');
+                }
+
+                goldbachTimeDisplay_card5.textContent = `Calculation took: ${elapsedTime.toFixed(4)} seconds.`;
+                findPairBtn_card5.disabled = false;
+                findPairBtn_card5.textContent = 'Find Prime Pair';
+                goldbachInput_card5.disabled = false;
+            }, 50);
+        }
+
+
+        // --- Event Handlers & UX ---
+        
+        // Input handlers for warnings
+        nInput_card0.addEventListener('input', () => {
+            const n = parseInt(nInput_card0.value);
+            nLimitWarning_card0.classList.toggle('hidden', n <= 10000 || isNaN(n));
+        });
+        
+        exponentInput_card1.addEventListener('input', () => {
+            const p = parseInt(exponentInput_card1.value);
+            mersenneLimitWarning_card1.classList.toggle('hidden', p <= MAX_SAFE_EXPONENT || isNaN(p));
+        });
+
+        xInput_card3.addEventListener('input', () => {
+             const x = parseInt(xInput_card3.value);
+            xLimitWarning_card3.classList.toggle('text-red-500', x > 10000);
+            xLimitWarning_card3.classList.toggle('text-gray-500', x <= 10000);
+        });
+
+        // Event listeners for calculation buttons
+        calculateBtn_card0.addEventListener('click', calculatePrime);
+        nInput_card0.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                calculatePrime();
+            }
+        });
+
+        mersenneBtn_card1.addEventListener('click', runMersenneFinder);
+        exponentInput_card1.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                runMersenneFinder();
+            }
+        });
+
+        checkBtn_card2.addEventListener('click', checkPrimePosition);
+        checkInput_card2.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                checkPrimePosition();
+            }
+        });
+
+        countBtn_card3.addEventListener('click', runPrimeCounter);
+        xInput_card3.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                runPrimeCounter();
+            }
+        });
+        
+        findGapBtn_card4.addEventListener('click', runPrimeGapFinder);
+        gapLimitInput_card4.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                runPrimeGapFinder();
+            }
+        });
+
+        findPairBtn_card5.addEventListener('click', runGoldbachFinder);
+        goldbachInput_card5.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                runGoldbachFinder();
+            }
+        });
+
+        // Factorization Toggle Handler (remains the same)
+        toggleFactorizationBtn_card2.addEventListener('click', () => {
+            const isHidden = factorizationDisplay_card2.classList.toggle('hidden');
+            const fullFactorization = factorizationDisplay_card2.dataset.fullFactorization || '';
+            const isLongFactorization = fullFactorization.length > 20;
+            
+            if (isHidden) {
+                factorizationDisplay_card2.textContent = isLongFactorization 
+                    ? fullFactorization.substring(0, 20) + '...' 
+                    : fullFactorization;
+                toggleFactorizationBtn_card2.textContent = isLongFactorization ? 'Show Full Factorization' : 'Show Factorization';
+            } else {
+                factorizationDisplay_card2.textContent = fullFactorization;
+                toggleFactorizationBtn_card2.textContent = 'Hide Factorization';
+            }
+        });
+
+        // --- Carousel Navigation Logic with Lazy Saving ---
+
+        const pages = document.querySelectorAll('.card-page');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const pageIndicator = document.getElementById('pageIndicator');
+        let currentPage = 0; 
+        const totalPages = pages.length; // Now 6
+
+        /**
+         * Captures and saves the current UI state of the OUTGOING card into
+         * the persistent calculationState object and then to localStorage.
+         */
+        function saveCurrentCardState(index) {
+            if (index === 0) { // N-th Prime
+                calculationState['card-0'] = {
+                    n: parseInt(nInput_card0.value) || 1, 
+                    resultText: resultDisplay_card0.textContent,
+                    timeText: timeDisplay_card0.textContent
+                };
+            } else if (index === 1) { // NEW Mersenne
+                // Note: We save the innerHTML results because they contain the styling/bolding of the result text
+                calculationState['card-1'] = {
+                    p: parseInt(exponentInput_card1.value) || 2, 
+                    resultText: mersenneResultDisplay_card1.innerHTML,
+                    timeText: mersenneTimeDisplay_card1.textContent,
+                    MpText: mersenneResultDisplay_card1.innerHTML,
+                    EpText: perfectNumDisplay_card1.innerHTML,
+                };
+            } else if (index === 2) { // Prime Rank (was card-1)
+                const isNotPrime = checkResultDisplay_card2.textContent.includes('NOT a prime');
+                
+                calculationState['card-2'] = {
+                    num: parseInt(checkInput_card2.value) || 1,
+                    resultText: checkResultDisplay_card2.textContent,
+                    timeText: checkTimeDisplay_card2.textContent,
+                    isPrime: !isNotPrime,
+                    factorization: isNotPrime ? factorizationDisplay_card2.dataset.fullFactorization || '' : '',
+                    twinStatus: twinPrimeStatus_card2.innerHTML,
+                    cousinStatus: cousinPrimeStatus_card2.innerHTML
+                };
+            } else if (index === 3) { // Prime Counter (was card-2)
+                calculationState['card-3'] = {
+                    x: parseInt(xInput_card3.value) || 1,
+                    resultText: countResultDisplay_card3.innerHTML, // Use innerHTML for PNT content
+                    timeText: countTimeDisplay_card3.textContent
+                };
+            } else if (index === 4) { // Prime Gaps (was card-3)
+                calculationState['card-4'] = {
+                    limit: parseInt(gapLimitInput_card4.value) || 1, 
+                    resultText: gapResultDisplay_card4.innerHTML,
+                    timeText: gapTimeDisplay_card4.textContent
+                };
+            } else if (index === 5) { // Goldbach's Conjecture (was card-4)
+                 // Convert pairs list HTML back to simple array of strings for persistence
+                const savedPairs = Array.from(goldbachPairsList_card5.children).map(li => {
+                    const parts = li.textContent.split(' + ').map(s => parseInt(s.trim().replace(/,/g, '')));
+                    return { p1: parts[0], p2: parts[1] };
+                }).filter(p => !isNaN(p.p1));
+                
+                calculationState['card-5'] = {
+                    n: parseInt(goldbachInput_card5.value) || 4, 
+                    resultText: goldbachResultDisplay_card5.innerHTML,
+                    timeText: goldbachTimeDisplay_card5.textContent,
+                    pairs: savedPairs
+                };
+            }
+            saveApplicationState();
+        }
+
+
+        /**
+         * Switches the view to the specified card index, saving the old state and loading the new state.
+         * @param {number} index - The index of the card to show (0 to 5).
+         */
+        function showCard(index) {
+            // 1. SAVE STATE: Save the state of the card we are *leaving*
+            if (currentPage !== index) {
+                saveCurrentCardState(currentPage);
+            }
+            
+            // Hide all pages and show only the target page
+            pages.forEach((page, i) => {
+                if (i === index) {
+                   page.classList.remove('hidden');
+                } else {
+                   page.classList.add('hidden');
+                }
+            });
+            
+            currentPage = index;
+
+            // Update indicator
+            let currentTitle = "";
+            const total = totalPages;
+            if (currentPage === 0) {
+                currentTitle = "n-th Prime Finder";
+            } else if (currentPage === 1) {
+                currentTitle = "Mersenne Primes & Perfect Numbers";
+            } else if (currentPage === 2) {
+                currentTitle = "Prime Rank Checker"; 
+            } else if (currentPage === 3) {
+                currentTitle = "Prime Counter (π(x))"; 
+            } else if (currentPage === 4) {
+                currentTitle = "Prime Gaps and Records"; 
+            } else if (currentPage === 5) {
+                currentTitle = "Goldbach's Conjecture"; 
+            }
+            
+            pageIndicator.innerHTML = `Viewing: <span class="font-semibold text-gray-700">${currentTitle}</span> (${currentPage + 1} of ${total})`;
+
+            // Update buttons
+            prevBtn.disabled = currentPage === 0;
+            nextBtn.disabled = currentPage === totalPages - 1;
+
+            // 2. LOAD STATE: Load saved state for the current card
+            if (index === 0) {
+                const state = calculationState['card-0'];
+                nInput_card0.value = state.n;
+                resultDisplay_card0.textContent = state.resultText;
+                timeDisplay_card0.textContent = state.timeText;
+                nLimitWarning_card0.classList.toggle('hidden', state.n <= 10000);
+            } else if (index === 1) {
+                const state = calculationState['card-1'];
+                exponentInput_card1.value = state.p;
+                mersenneResultDisplay_card1.innerHTML = state.MpText;
+                perfectNumDisplay_card1.innerHTML = state.EpText;
+                mersenneTimeDisplay_card1.textContent = state.timeText;
+                mersenneLimitWarning_card1.classList.toggle('hidden', state.p <= MAX_SAFE_EXPONENT);
+            } else if (index === 2) {
+                const state = calculationState['card-2'];
+                checkInput_card2.value = state.num;
+                checkResultDisplay_card2.textContent = state.resultText;
+                checkTimeDisplay_card2.textContent = state.timeText;
+                twinPrimeStatus_card2.innerHTML = state.twinStatus;
+                cousinPrimeStatus_card2.innerHTML = state.cousinStatus;
+
+                // Handle factorization and pair display based on saved state
+                const isNPrime = checkResultDisplay_card2.textContent.includes('prime number');
+
+                if (isNPrime) {
+                    primePairSection_card2.classList.remove('hidden');
+                    factorizationSection_card2.classList.add('hidden');
+                } else {
+                    primePairSection_card2.classList.add('hidden');
+                    if (state.factorization) {
+                        factorizationSection_card2.classList.remove('hidden');
+                        factorizationDisplay_card2.dataset.fullFactorization = state.factorization;
+                        
+                        const maxDisplayLength = 20;
+                        const isLongFactorization = state.factorization.length > maxDisplayLength;
+
+                        factorizationDisplay_card2.textContent = isLongFactorization
+                            ? state.factorization.substring(0, maxDisplayLength) + '...'
+                            : state.factorization;
+                            
+                        factorizationDisplay_card2.classList.add('hidden'); 
+                        toggleFactorizationBtn_card2.textContent = isLongFactorization ? 'Show Full Factorization' : 'Show Factorization';
+                    } else {
+                         factorizationSection_card2.classList.add('hidden');
+                    }
+                }
+            } else if (index === 3) {
+                const state = calculationState['card-3'];
+                xInput_card3.value = state.x;
+                countResultDisplay_card3.innerHTML = state.resultText;
+                countTimeDisplay_card3.textContent = state.timeText;
+                xLimitWarning_card3.classList.toggle('text-red-500', state.x > 10000);
+                xLimitWarning_card3.classList.toggle('text-gray-500', state.x <= 10000);
+            } else if (index === 4) {
+                const state = calculationState['card-4'];
+                gapLimitInput_card4.value = state.limit;
+                gapResultDisplay_card4.innerHTML = state.resultText;
+                gapTimeDisplay_card4.textContent = state.timeText;
+            } else if (index === 5) {
+                const state = calculationState['card-5'];
+                goldbachInput_card5.value = state.n;
+                goldbachResultDisplay_card5.innerHTML = state.resultText;
+                goldbachTimeDisplay_card5.textContent = state.timeText;
+
+                // Load pairs list
+                if (state.pairs && state.pairs.length > 0) {
+                    goldbachPairsSection_card5.classList.remove('hidden');
+                    let listHTML = '';
+                    state.pairs.forEach(pair => {
+                         listHTML += `<li>${pair.p1.toLocaleString()} + ${pair.p2.toLocaleString()}</li>`;
+                    });
+                    goldbachPairsList_card5.innerHTML = listHTML;
+                } else {
+                    goldbachPairsSection_card5.classList.add('hidden');
+                    goldbachPairsList_card5.innerHTML = '';
+                }
+            }
+        }
+        
+        function nextCard() {
+            if (currentPage < totalPages - 1) {
+                showCard(currentPage + 1);
+            }
+        }
+
+        function prevCard() {
+            if (currentPage > 0) {
+                showCard(currentPage - 1);
+            }
+        }
+        
+        prevBtn.addEventListener('click', prevCard);
+        nextBtn.addEventListener('click', nextCard);
+        
+        // Global Keyboard Navigation (Left/Right Arrows)
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') {
+                // Ensure keypress doesn't interfere with inputs
+                if (document.activeElement.tagName !== 'INPUT') { 
+                    prevCard();
+                }
+            } else if (e.key === 'ArrowRight') {
+                if (document.activeElement.tagName !== 'INPUT') { 
+                    nextCard();
+                }
+            }
+        });
+
+        // Start the application on the first card
+        window.onload = () => {
+            loadState(); // Load persistent state on launch
+            showCard(0);
+        };
+
+    </script>
+</body>
+</html>
